@@ -2,7 +2,7 @@ require('dotenv').config();
 
 module.exports = {
   // Discord Configuration
-  token: process.env.MTQyMzM3NjUzNzM5NDA5MDAyNA.GKQADR.D02-N1N8w95H8hKXBkLVmoVOBpdGKmMkqNTc-Q,
+  token: process.env.MTQyMzM3NjUzNzM5NDA5MDAyNA.G2fKYG.CqyXsyW7OkIoqCWiyacYvf2y40fxKmrcA3T0f4,
   clientId: process.env.1423376537394090024,
   guildId: process.env.1310886010682478665,
   prefix: process.env.BOT_PREFIX || '!',
