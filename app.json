@@ -1,0 +1,75 @@
+{
+  "name": "Discord Anti-Crasher Bot",
+  "description": "A Discord bot that provides anti-spam, raid protection, and anti-crash features",
+  "repository": "https://github.com/top0kfc/poprikolu",
+  "keywords": ["discord", "bot", "anti-spam", "raid-protection", "security"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "env": {
+    "DISCORD_TOKEN": {
+      "description": "Your Discord bot token",
+      "required": true
+    },
+    "DISCORD_CLIENT_ID": {
+      "description": "Your Discord application client ID",
+      "required": true
+    },
+    "GUILD_ID": {
+      "description": "Your Discord server ID",
+      "required": true
+    },
+    "BOT_PREFIX": {
+      "description": "Command prefix for the bot",
+      "value": "!",
+      "required": false
+    },
+    "LOG_CHANNEL_ID": {
+      "description": "Discord channel ID for logging",
+      "required": false
+    },
+    "SPAM_MESSAGE_LIMIT": {
+      "description": "Maximum messages per user in time window",
+      "value": "5",
+      "required": false
+    },
+    "SPAM_TIME_WINDOW": {
+      "description": "Time window for spam detection (ms)",
+      "value": "10000",
+      "required": false
+    },
+    "SPAM_MUTE_DURATION": {
+      "description": "Mute duration for spammers (ms)",
+      "value": "300000",
+      "required": false
+    },
+    "RAID_JOIN_LIMIT": {
+      "description": "Maximum joins in time window to trigger raid protection",
+      "value": "10",
+      "required": false
+    },
+    "RAID_TIME_WINDOW": {
+      "description": "Time window for raid detection (ms)",
+      "value": "30000",
+      "required": false
+    },
+    "MAX_CHANNELS_PER_HOUR": {
+      "description": "Maximum channels that can be created per hour",
+      "value": "5",
+      "required": false
+    },
+    "MAX_ROLES_PER_HOUR": {
+      "description": "Maximum roles that can be created per hour",
+      "value": "3",
+      "required": false
+    }
+  }
+}

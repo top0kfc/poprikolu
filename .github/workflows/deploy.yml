@@ -1,0 +1,99 @@
+name: Deploy Discord Bot
+
+on:
+  push:
+    branches:
+      - main
+      - feature/discord-anti-crasher-bot
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check code style
+        run: |
+          echo "Checking Node.js syntax..."
+          node -c index.js
+          echo "✅ Code syntax check passed"
+
+  build-docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/discord-anti-crasher-bot'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t discord-bot:${{ github.sha }} .
+          echo "✅ Docker image built successfully"
+
+      - name: Test Docker image
+        run: |
+          echo "Testing Docker image..."
+          docker run --rm discord-bot:${{ github.sha }} node -e "console.log('Docker test passed')"
+
+  deploy-railway:
+    needs: [test, build-docker]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        run: |
+          echo "🚀 Ready for Railway deployment"
+          echo "Manual step: Connect your GitHub repository to Railway"
+          echo "Railway will automatically deploy when you push to main branch"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: |
+          npm audit --audit-level moderate
+          echo "✅ Security audit completed"
+
+      - name: Check for sensitive files
+        run: |
+          echo "Checking for sensitive files..."
+          if [ -f .env ]; then
+            echo "❌ .env file found - should not be committed"
+            exit 1
+          fi
+          echo "✅ No sensitive files found"
