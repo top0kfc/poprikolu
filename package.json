@@ -16,6 +16,7 @@
     "pm2:restart": "pm2 restart discord-bot",
     "pm2:logs": "pm2 logs discord-bot",
     "health": "node health-check.js",
+    "debug": "node debug-env.js",
     "lint": "echo 'Linting completed'",
     "postinstall": "echo 'Dependencies installed successfully'"
   },
