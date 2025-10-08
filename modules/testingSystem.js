@@ -14,34 +14,34 @@ class TestingSystem {
    */
   canRunTests(member) {
     if (!member) {
-      this.logger.debug('canRunTests: member не найден');
+      this.logger.info('canRunTests: member не найден');
       return false;
     }
 
     // Если тестовый режим отключен - никто не может запускать тесты
     if (!this.config.testing.enabled) {
-      this.logger.debug('canRunTests: TESTING_MODE отключен');
+      this.logger.info('canRunTests: TESTING_MODE отключен');
       return false;
     }
     
     // Проверка на владельца сервера (guild owner)
     const isOwner = member.guild.ownerId === member.id;
     if (isOwner) {
-      this.logger.debug(`canRunTests: ${member.user.tag} является владельцем сервера - доступ разрешен`);
+      this.logger.info(`canRunTests: ${member.user.tag} является владельцем сервера - доступ разрешен`);
       return true;
     }
     
     // Проверка на администратора
     const isAdmin = member.permissions.has(PermissionFlagsBits.Administrator);
     if (isAdmin) {
-      this.logger.debug(`canRunTests: ${member.user.tag} имеет права администратора - доступ разрешен`);
+      this.logger.info(`canRunTests: ${member.user.tag} имеет права администратора - доступ разрешен`);
       return true;
     }
     
     // Проверка в списке разрешенных тестировщиков
     const isAllowedTester = this.config.testing.allowedTesters.includes(member.id);
     if (isAllowedTester) {
-      this.logger.debug(`canRunTests: ${member.user.tag} в списке разрешенных тестировщиков - доступ разрешен`);
+      this.logger.info(`canRunTests: ${member.user.tag} в списке разрешенных тестировщиков - доступ разрешен`);
       return true;
     }
     
@@ -53,13 +53,13 @@ class TestingSystem {
     );
     
     if (hasTesterRole) {
-      this.logger.debug(`canRunTests: ${member.user.tag} имеет роль тестировщика - доступ разрешен`);
+      this.logger.info(`canRunTests: ${member.user.tag} имеет роль тестировщика - доступ разрешен`);
       return true;
     }
 
     // Если ни одно условие не выполнено - доступ запрещен
-    this.logger.debug(`canRunTests: ${member.user.tag} не имеет прав для тестирования`);
-    this.logger.debug(`canRunTests: isOwner=${isOwner}, isAdmin=${isAdmin}, isAllowedTester=${isAllowedTester}, hasTesterRole=${hasTesterRole}`);
+    this.logger.info(`canRunTests: ${member.user.tag} не имеет прав для тестирования`);
+    this.logger.info(`canRunTests: isOwner=${isOwner}, isAdmin=${isAdmin}, isAllowedTester=${isAllowedTester}, hasTesterRole=${hasTesterRole}`);
     
     return false;
   }
@@ -105,7 +105,7 @@ class TestingSystem {
         await this.delay(delay);
       } catch (error) {
         blockedCount++;
-        this.logger.debug(`Сообщение #${i} заблокировано: ${error.message}`);
+        this.logger.info(`Сообщение #${i} заблокировано: ${error.message}`);
       }
     }
 
@@ -153,7 +153,7 @@ class TestingSystem {
         await this.delay(1000); // 1 секунда между созданиями
       } catch (error) {
         blockedCount++;
-        this.logger.debug(`Создание канала #${i} заблокировано: ${error.message}`);
+        this.logger.info(`Создание канала #${i} заблокировано: ${error.message}`);
       }
     }
 
@@ -201,7 +201,7 @@ class TestingSystem {
         await this.delay(2000); // 2 секунды между созданиями
       } catch (error) {
         blockedCount++;
-        this.logger.debug(`Создание роли #${i} заблокировано: ${error.message}`);
+        this.logger.info(`Создание роли #${i} заблокировано: ${error.message}`);
       }
     }
 
