@@ -16,11 +16,20 @@ class AntiSpam {
   }
 
   handleMessage(message) {
-    // Игнорируем ботов и системные сообщения
-    if (message.author.bot || message.system) return;
+    // Игнорируем системные сообщения
+    if (message.system) return;
     
-    // Игнорируем администраторов
-    if (this.isAdmin(message.member)) return;
+    // В тестовом режиме - проверяем только сообщения с префиксом "Test"
+    if (this.config.testing && this.config.testing.enabled) {
+      // Разрешаем тестировать только сообщения, начинающиеся с "Test"
+      if (message.author.bot && !message.content.startsWith('Test')) return;
+    } else {
+      // В обычном режиме - игнорируем всех ботов
+      if (message.author.bot) return;
+    }
+    
+    // Игнорируем администраторов (НЕ во время тестов)
+    if (!this.config.testing?.enabled && this.isAdmin(message.member)) return;
 
     // Проверяем спам
     if (this.isSpamming(message)) {
