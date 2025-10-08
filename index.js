@@ -3,6 +3,8 @@ const config = require('./config/config.js');
 const AntiSpam = require('./modules/antiSpam.js');
 const RaidProtection = require('./modules/raidProtection.js');
 const AntiCrash = require('./modules/antiCrash.js');
+const TestingSystem = require('./modules/testingSystem.js');
+const AdvancedProtection = require('./modules/advancedProtection.js');
 const Logger = require('./utils/logger.js');
 
 class AntiCrasherBot {
@@ -25,6 +27,10 @@ class AntiCrasherBot {
     this.antiSpam = new AntiSpam(this.client, this.config, this.logger);
     this.raidProtection = new RaidProtection(this.client, this.config, this.logger);
     this.antiCrash = new AntiCrash(this.client, this.config, this.logger);
+    
+    // Initialize advanced systems
+    this.testingSystem = new TestingSystem(this.client, this.config, this.logger);
+    this.advancedProtection = new AdvancedProtection(this.client, this.config, this.logger);
 
     this.commands = new Collection();
     
@@ -36,6 +42,9 @@ class AntiCrasherBot {
     this.client.once(Events.ClientReady, () => {
       this.logger.info(`🚀 Bot готов! Вошёл как ${this.client.user.tag}`);
       console.log(`🚀 Anti-Crasher Bot запущен как ${this.client.user.tag}`);
+      
+      // Инициализация продвинутой защиты
+      this.advancedProtection.initialize();
     });
 
     this.client.on(Events.Error, (error) => {
@@ -97,25 +106,28 @@ class AntiCrasherBot {
   loadCommands() {
     console.log('📂 Загрузка команд...');
     
-    try {
-      // Загружаем команду security
-      const securityCommand = require('./commands/security.js');
-      this.commands.set(securityCommand.name, securityCommand);
-      
-      // Загружаем алиасы
-      if (securityCommand.aliases) {
-        securityCommand.aliases.forEach(alias => {
-          this.commands.set(alias, securityCommand);
-        });
+    const commands = ['security', 'test'];
+    
+    commands.forEach(commandName => {
+      try {
+        const command = require(`./commands/${commandName}.js`);
+        this.commands.set(command.name, command);
+        
+        // Загружаем алиасы
+        if (command.aliases) {
+          command.aliases.forEach(alias => {
+            this.commands.set(alias, command);
+          });
+        }
+        
+        console.log(`✅ Загружена команда: ${command.name}`);
+        this.logger.info(`Загружена команда: ${command.name}`);
+        
+      } catch (error) {
+        console.error(`❌ Ошибка загрузки команды ${commandName}:`, error);
+        this.logger.error(`Ошибка загрузки команды ${commandName}:`, error);
       }
-      
-      console.log(`✅ Загружена команда: ${securityCommand.name}`);
-      this.logger.info(`Загружена команда: ${securityCommand.name}`);
-      
-    } catch (error) {
-      console.error('❌ Ошибка загрузки команд:', error);
-      this.logger.error('Ошибка загрузки команд:', error);
-    }
+    });
   }
 
   async start() {
