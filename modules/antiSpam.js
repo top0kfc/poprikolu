@@ -19,10 +19,11 @@ class AntiSpam {
     // Игнорируем системные сообщения
     if (message.system) return;
     
-    // В тестовом режиме - проверяем только сообщения с префиксом "Test"
+    // В тестовом режиме - проверяем ВСЕ сообщения бота (для тестирования)
     if (this.config.testing && this.config.testing.enabled) {
-      // Разрешаем тестировать только сообщения, начинающиеся с "Test"
-      if (message.author.bot && !message.content.startsWith('Test')) return;
+      // В тестовом режиме не игнорируем бота - проверяем все его сообщения
+      // Исключение: команды бота (начинаются с префикса)
+      if (message.author.bot && message.content.startsWith(this.config.prefix)) return;
     } else {
       // В обычном режиме - игнорируем всех ботов
       if (message.author.bot) return;
