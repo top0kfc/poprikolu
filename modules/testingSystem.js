@@ -13,18 +13,55 @@ class TestingSystem {
    * Проверяет, может ли пользователь запускать тесты
    */
   canRunTests(member) {
-    if (!this.config.testing.enabled) return false;
+    if (!member) {
+      this.logger.debug('canRunTests: member не найден');
+      return false;
+    }
+
+    // Если тестовый режим отключен - никто не может запускать тесты
+    if (!this.config.testing.enabled) {
+      this.logger.debug('canRunTests: TESTING_MODE отключен');
+      return false;
+    }
     
-    // Проверка на админа или тестировщика
+    // Проверка на владельца сервера (guild owner)
+    const isOwner = member.guild.ownerId === member.id;
+    if (isOwner) {
+      this.logger.debug(`canRunTests: ${member.user.tag} является владельцем сервера - доступ разрешен`);
+      return true;
+    }
+    
+    // Проверка на администратора
     const isAdmin = member.permissions.has(PermissionFlagsBits.Administrator);
+    if (isAdmin) {
+      this.logger.debug(`canRunTests: ${member.user.tag} имеет права администратора - доступ разрешен`);
+      return true;
+    }
+    
+    // Проверка в списке разрешенных тестировщиков
     const isAllowedTester = this.config.testing.allowedTesters.includes(member.id);
-    const hasTesterRole = this.config.bypassRoles.some(role => 
+    if (isAllowedTester) {
+      this.logger.debug(`canRunTests: ${member.user.tag} в списке разрешенных тестировщиков - доступ разрешен`);
+      return true;
+    }
+    
+    // Проверка на роли тестировщиков
+    const hasTesterRole = this.config.bypassRoles && this.config.bypassRoles.some(role => 
       member.roles.cache.some(memberRole => 
         memberRole.name.toLowerCase().includes(role.toLowerCase())
       )
     );
+    
+    if (hasTesterRole) {
+      this.logger.debug(`canRunTests: ${member.user.tag} имеет роль тестировщика - доступ разрешен`);
+      return true;
+    }
 
-    return isAdmin || isAllowedTester || hasTesterRole;
+    // Если ни одно условие не выполнено - доступ запрещен
+    this.logger.debug(`canRunTests: ${member.user.tag} не имеет прав для тестирования`);
+    this.logger.debug(`canRunTests: isOwner=${isOwner}, isAdmin=${isAdmin}, isAllowedTester=${isAllowedTester}, hasTesterRole=${hasTesterRole}`);
+    
+    return false;
   }
 
   /**

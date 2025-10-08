@@ -57,6 +57,11 @@ module.exports = {
             name: '⏹️ Остановка',
             value: '`!test stop` - Остановить все активные тесты',
             inline: false
+          },
+          {
+            name: '🔍 Диагностика',
+            value: '`!test debug` - Проверить права доступа к тестам',
+            inline: false
           }
         ],
         footer: {
@@ -110,6 +115,11 @@ module.exports = {
         case 'stop':
         case 'стоп':
           await this.handleStop(message, bot);
+          break;
+
+        case 'debug':
+        case 'диагностика':
+          await this.handleDebug(message, bot);
           break;
 
         default:
@@ -304,6 +314,44 @@ module.exports = {
       description: `Остановлено активных тестов: ${stoppedCount}`,
       timestamp: new Date(),
       footer: { text: 'Anti-Crasher Testing System' }
+    };
+
+    message.reply({ embeds: [embed] });
+  },
+
+  async handleDebug(message, bot) {
+    const member = message.member;
+    
+    // Проверки доступа
+    const isOwner = member.guild.ownerId === member.id;
+    const isAdmin = member.permissions.has(PermissionFlagsBits.Administrator);
+    const isAllowedTester = bot.config.testing.allowedTesters.includes(member.id);
+    const hasTesterRole = bot.config.bypassRoles && bot.config.bypassRoles.some(role => 
+      member.roles.cache.some(memberRole => 
+        memberRole.name.toLowerCase().includes(role.toLowerCase())
+      )
+    );
+    
+    const canRunTests = bot.testingSystem.canRunTests(member);
+    
+    const embed = {
+      color: canRunTests ? 0x00ff00 : 0xff0000,
+      title: '🔍 Диагностика прав доступа к тестам',
+      fields: [
+        { name: '👤 Пользователь', value: `${member.user.tag} (ID: ${member.id})`, inline: false },
+        { name: '🔧 Тестовый режим', value: bot.config.testing.enabled ? '✅ Включен' : '❌ Отключен', inline: true },
+        { name: '👑 Владелец сервера', value: isOwner ? '✅ Да' : '❌ Нет', inline: true },
+        { name: '🛡️ Администратор', value: isAdmin ? '✅ Да' : '❌ Нет', inline: true },
+        { name: '📝 В списке тестеров', value: isAllowedTester ? '✅ Да' : '❌ Нет', inline: true },
+        { name: '🎭 Роль тестера', value: hasTesterRole ? '✅ Да' : '❌ Нет', inline: true },
+        { name: '🔐 Итоговый доступ', value: canRunTests ? '✅ РАЗРЕШЕН' : '❌ ЗАПРЕЩЕН', inline: true }
+      ],
+      description: `**Конфигурация системы тестирования:**\n\n` +
+                   `• Разрешенные тестеры: ${bot.config.testing.allowedTesters.length > 0 ? bot.config.testing.allowedTesters.join(', ') : 'Не указаны'}\n` +
+                   `• Роли обхода: ${bot.config.bypassRoles ? bot.config.bypassRoles.join(', ') : 'Не указаны'}\n\n` +
+                   `${!canRunTests ? '**Как получить доступ:**\n• Убедитесь что TESTING_MODE=true\n• Добавьте свой ID в ALLOWED_TESTERS\n• Или получите роль администратора' : ''}`,
+      timestamp: new Date(),
+      footer: { text: 'Anti-Crasher Debug System' }
     };
 
     message.reply({ embeds: [embed] });
