@@ -70,7 +70,11 @@ class TestingSystem {
   async runSpamTest(channel, intensity = 'medium', duration = 30000) {
     const testId = `spam-${Date.now()}`;
     const messageCount = this.getIntensityValue(intensity, { low: 10, medium: 25, high: 50 });
-    const delay = Math.floor(duration / messageCount);
+    
+    // Делаем тест более агрессивным для реального тестирования антиспама
+    // Первые сообщения отправляем быстро (для превышения лимита), остальные - с нормальной задержкой
+    const fastMessages = Math.min(8, messageCount); // Первые 8 сообщений быстро
+    const normalMessages = messageCount - fastMessages;
 
     this.logger.info(`🧪 Запуск теста спама: ${messageCount} сообщений за ${duration}ms`);
 
@@ -97,15 +101,30 @@ class TestingSystem {
     let sentCount = 0;
     let blockedCount = 0;
 
-    for (let i = 0; i < messageCount; i++) {
+    // Отправляем первые сообщения быстро (для превышения лимита антиспама)
+    for (let i = 0; i < fastMessages; i++) {
       try {
         const messageContent = messages[i % messages.length] + ` #${i}`;
         await channel.send(messageContent);
         sentCount++;
-        await this.delay(delay);
+        await this.delay(500); // 0.5 секунды между быстрыми сообщениями
       } catch (error) {
         blockedCount++;
-        this.logger.info(`Сообщение #${i} заблокировано: ${error.message}`);
+        this.logger.info(`Быстрое сообщение #${i} заблокировано: ${error.message}`);
+      }
+    }
+
+    // Отправляем оставшиеся сообщения с нормальной задержкой
+    const normalDelay = normalMessages > 0 ? Math.floor((duration - fastMessages * 500) / normalMessages) : 1000;
+    for (let i = fastMessages; i < messageCount; i++) {
+      try {
+        const messageContent = messages[i % messages.length] + ` #${i}`;
+        await channel.send(messageContent);
+        sentCount++;
+        await this.delay(normalDelay);
+      } catch (error) {
+        blockedCount++;
+        this.logger.info(`Обычное сообщение #${i} заблокировано: ${error.message}`);
       }
     }
 
